@@ -51,7 +51,7 @@ const App = () => {
         setStatus('rejected');
       })
       .finally(setLoading(false));
-  }, [filter, page]);
+  }, [filter, page, perPage]);
 
   const filterHandler = newFilter => {
     console.log('filterHandler');
