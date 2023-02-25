@@ -3,19 +3,17 @@ import css from './Modal.module.css';
 
 const Modal = ({ largeImageURL, closeModal }) => {
   useEffect(() => {
+    const onKeydownCloseModal = event => {
+      if (event.code === 'Escape') {
+        closeModal();
+      }
+    };
     window.addEventListener('keydown', onKeydownCloseModal);
+    return () => window.removeEventListener('keydown', onKeydownCloseModal);
   });
 
   const onClickCloseModal = event => {
     if (event.currentTarget === event.target) {
-      window.removeEventListener('keydown', onKeydownCloseModal);
-      closeModal();
-    }
-  };
-
-  const onKeydownCloseModal = event => {
-    if (event.code === 'Escape') {
-      window.removeEventListener('keydown', onKeydownCloseModal);
       closeModal();
     }
   };

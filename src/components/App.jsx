@@ -42,7 +42,7 @@ const App = () => {
         setStatus('rejected');
       })
       .finally(setLoading(false));
-  }, [filter, page, perPage]);
+  }, [filter, page]);
 
   const filterHandler = newFilter => {
     setFilter(newFilter);
