@@ -22,15 +22,11 @@ const App = () => {
     if (!filter) {
       return;
     }
-    console.log('useEffect');
 
     setLoading(true);
-    console.log('setLoading');
 
     fetchImages(filter, page, perPage)
       .then(response => {
-        console.log('get response => ', response);
-
         const newImages = response.hits.map(
           ({ id, webformatURL, largeImageURL }) => ({
             id,
@@ -38,13 +34,9 @@ const App = () => {
             largeImageURL,
           })
         );
-        console.log('newImages => ', newImages);
-
         setImages(() => [...images, ...newImages]);
         setTotal(response.totalHits);
         setStatus('resolved');
-
-        console.log('changed state (images, total, status)');
       })
       .catch(error => {
         setError(error);
@@ -54,26 +46,21 @@ const App = () => {
   }, [filter, page, perPage]);
 
   const filterHandler = newFilter => {
-    console.log('filterHandler');
     setFilter(newFilter);
     setImages([]);
     setPage(1);
   };
 
   const loadMoreHandler = () => {
-    console.log('loadMoreHandler');
     setPage(prevState => prevState + 1);
   };
 
   const openModal = largeImageURL => {
-    console.log('openModal');
     setModal(true);
     setLargeImageUrl(largeImageURL);
   };
 
   const closeModal = () => {
-    console.log('closeModal');
-
     setModal(true);
   };
 
