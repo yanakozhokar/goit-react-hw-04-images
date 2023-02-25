@@ -60,7 +60,7 @@ const App = () => {
   };
 
   const closeModal = () => {
-    setModal(true);
+    setModal(false);
   };
 
   return (
