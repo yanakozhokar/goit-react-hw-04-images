@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
@@ -6,116 +6,100 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import fetchImages from '../services/api';
 
-class App extends Component {
-  state = {
-    filter: '',
-    images: [],
-    page: 1,
-    per_page: 12,
-    total: 0,
-    status: 'idle',
-    error: null,
-    loading: false,
-    modal: false,
-    largeImageURL: '',
-  };
+const App = () => {
+  const [filter, setFilter] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+  const [total, setTotal] = useState(0);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState(false);
+  const [largeImageURL, setLargeImageUrl] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.filter !== this.state.filter ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({
-        loading: true,
-      });
-
-      fetchImages(this.state.filter, this.state.page, this.state.per_page)
-        .then(response => {
-          const newImages = response.hits.map(
-            ({ id, webformatURL, largeImageURL }) => ({
-              id,
-              webformatURL,
-              largeImageURL,
-            })
-          );
-          this.setState({
-            images: [...this.state.images, ...newImages],
-            total: response.totalHits,
-            status: 'resolved',
-          });
-        })
-        .catch(error => {
-          this.setState({
-            error,
-            status: 'rejected',
-          });
-        })
-        .finally(this.setState({ loading: false }));
+  useEffect(() => {
+    if (!filter) {
+      return;
     }
-  }
+    console.log('useEffect');
 
-  filterHandler = newFilter => {
-    this.setState({
-      filter: newFilter,
-      images: [],
-      page: 1,
-    });
+    setLoading(true);
+    console.log('setLoading');
+
+    fetchImages(filter, page, perPage)
+      .then(response => {
+        console.log('get response => ', response);
+
+        const newImages = response.hits.map(
+          ({ id, webformatURL, largeImageURL }) => ({
+            id,
+            webformatURL,
+            largeImageURL,
+          })
+        );
+        console.log('newImages => ', newImages);
+
+        setImages(() => [...images, ...newImages]);
+        setTotal(response.totalHits);
+        setStatus('resolved');
+
+        console.log('changed state (images, total, status)');
+      })
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      })
+      .finally(setLoading(false));
+  }, [filter, page]);
+
+  const filterHandler = newFilter => {
+    console.log('filterHandler');
+    setFilter(newFilter);
+    setImages([]);
+    setPage(1);
   };
 
-  loadMoreHandler = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const loadMoreHandler = () => {
+    console.log('loadMoreHandler');
+    setPage(prevState => prevState + 1);
   };
 
-  openModal = largeImageURL => {
-    this.setState({
-      modal: true,
-      largeImageURL,
-    });
+  const openModal = largeImageURL => {
+    console.log('openModal');
+    setModal(true);
+    setLargeImageUrl(largeImageURL);
   };
 
-  closeModal = () => {
-    this.setState({
-      modal: false,
-    });
+  const closeModal = () => {
+    console.log('closeModal');
+
+    setModal(true);
   };
 
-  render() {
-    const { status, loading, error, modal, page } = this.state;
-
-    return (
-      <>
-        <Searchbar onSubmit={this.filterHandler} />
-        <main>
-          {page === 1 && loading && <Loader />}
-          {status === 'resolved' && (
-            <div>
-              <ImageGallery
-                images={this.state.images}
-                openModal={this.openModal}
-              />
-              {page !== 1 && loading && <Loader />}
-              {!loading &&
-                this.state.page <
-                  Math.ceil(this.state.total / this.state.per_page) && (
-                  <Button loadMore={this.loadMoreHandler} />
-                )}
-            </div>
-          )}
-          {status === 'rejected' && !loading && (
-            <p className="notFound">{error.message}</p>
-          )}
-          {modal && (
-            <Modal
-              largeImageURL={this.state.largeImageURL}
-              closeModal={this.closeModal}
-            />
-          )}
-        </main>
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar onSubmit={filterHandler} />
+      <main>
+        {page === 1 && loading && <Loader />}
+        {status === 'resolved' && (
+          <div>
+            <ImageGallery images={images} openModal={openModal} />
+            {page !== 1 && loading && <Loader />}
+            {!loading && page < Math.ceil(total / perPage) && (
+              <Button loadMore={loadMoreHandler} />
+            )}
+          </div>
+        )}
+        {status === 'rejected' && !loading && (
+          <p className="notFound">{error.message}</p>
+        )}
+        {modal && (
+          <Modal largeImageURL={largeImageURL} closeModal={closeModal} />
+        )}
+      </main>
+    </>
+  );
+};
 
 export default App;
