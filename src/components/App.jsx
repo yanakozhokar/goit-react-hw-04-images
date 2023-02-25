@@ -22,7 +22,6 @@ const App = () => {
     if (!filter) {
       return;
     }
-
     setLoading(true);
 
     fetchImages(filter, page, perPage)
